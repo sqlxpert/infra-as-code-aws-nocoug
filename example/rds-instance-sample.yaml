@@ -1,0 +1,79 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Sample RDS Oracle database"
+# Sample only. For production, copy and modify. If your RDS instances are
+# similar, parameterize one template and call it from parent templates,
+# so that there will be a record of each use, with parameter values.
+
+# Paul Marcelin, 2017-08-01
+
+Parameters:
+  MasterUserPassword:
+    Type: String
+    NoEcho: true
+    Description: "RDS database instance master user password (record this, securely; the password can be reset, but not retrieved)"
+
+Resources:
+  SampleRdsInst:
+    Type: "AWS::RDS::DBInstance"
+    DeletionPolicy: Retain
+    Properties:
+
+      DBInstanceClass: "db.t2.large"  # Minimum size for encryption
+
+      AllocatedStorage: 20  # GiB
+      StorageType: "gp2"
+      StorageEncrypted: true
+      # KmsKeyId: String
+      # Defaults to the generic RDS key for the AWS account.
+      # For production, create single-purpose KMS keys using CloudFormation
+      # templates, and insert a cross-stack reference here. KMS key properties
+      # incude lists of authorized users, which are impractical to
+      # parameterize. Therefore, a KMS key template is out-of-scope.
+
+      Engine: "oracle-se2"
+      EngineVersion: "12.1.0.2.v8"
+      LicenseModel: "license-included"
+      OptionGroupName: !ImportValue "RdsOptGrp-oracle-se2-12-1-Generic-Name"
+      DBParameterGroupName: !ImportValue "DbParmGrp-oracle-se2-12-1-Generic-Name"
+      CharacterSetName: "AL32UTF8"
+
+      DBSubnetGroupName: !ImportValue "DBSubnetGrp-Sample-Id"
+      MultiAZ: false
+      # AvailabilityZone:
+      # Defaults to a subnet chosen by AWS, from within the subnet group.
+      Port: 1521
+      VPCSecurityGroups:
+        - !ImportValue "SecGrp-DefaultVPC-OracleDB-Server-App-InVpc-Id"
+        - !ImportValue "SecGrp-DefaultVPC-OracleDB-Server-App-ExVpc-Id"
+      PubliclyAccessible: true
+
+      DBInstanceIdentifier: !Sub "${AWS::StackName}-cloudformation-sample"
+      Tags:
+        - { Key: Name, Value: !Sub "${AWS::StackName}-cloudformation-sample" }
+      CopyTagsToSnapshot: true
+
+      MasterUsername: "master"
+      MasterUserPassword: !Ref MasterUserPassword
+
+      DBName: "ORCL"
+
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      PreferredMaintenanceWindow: "Sat:15:00-Sat:16:00"  # UTC
+
+      BackupRetentionPeriod: 1  # days
+      PreferredBackupWindow: "14:00-14:30"  # UTC
+
+Outputs:
+  SampleRdsInstEndpoint:
+    Value: !GetAtt SampleRdsInst.Endpoint.Address
+    Description: "RDS database instance endpoint"
+    Export:
+      Name: !Sub "RdsInst-${AWS::StackName}-Endpoint"
+  SampleRdsInstPort:
+    Value: !GetAtt SampleRdsInst.Endpoint.Port
+    Description: "RDS database instance port"
+    Export:
+      Name: !Sub "RdsInst-${AWS::StackName}-Port"

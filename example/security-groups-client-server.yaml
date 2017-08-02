@@ -1,0 +1,104 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Client-server security group pair"
+# Can be used as-is. For production, call this template from parent templates,
+# so that there will be a record of each use, with parameter values.
+
+# Paul Marcelin, 2017-08-01
+
+Parameters:
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: "Parent Virtual Private Cloud (VPC) ID; if unsure, select the default VPC"
+  VpcKeyword:
+    Type: String
+    Description: "Keyword to identify the VPC (must be unique to the region)"
+    Default: "DefaultVPC"
+  ServiceKeyword:
+    Type: String
+    Description: "Keyword to identify the service (must be unique to the VPC)"
+    Default: "OracleDB"
+  PortMin:
+    Type: Number
+    Description: "Service port range start"
+    MinValue:     0
+    MaxValue: 65535
+    Default:   1521  # Oracle database
+  PortMax:
+    Type: Number
+    Description: "Service port range end"
+    MinValue:     0
+    MaxValue: 65535
+    Default:   1521  # Oracle database
+
+Metadata: 
+  AWS::CloudFormation::Interface:
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Port Range"
+        Parameters:  # Preserves desired non-alphabetic order
+          - PortMin
+          - PortMax
+
+Resources:
+
+  ClientSecGrp:
+    Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: Delete
+    Properties:
+      GroupDescription: !Sub "${ServiceKeyword} client, for client access in ${VpcKeyword}"
+      SecurityGroupEgress:
+        - # Dummy, to avoid automatic all-egress rule
+          IpProtocol: "-1"  # All
+          CidrIp: "127.0.0.1/32"  # Loopback
+      Tags:
+        - { Key: Name, Value: !Sub "${VpcKeyword}-${ServiceKeyword}-Client-App-InVpc" }
+        - { Key: Scope, Value: Client }
+        - { Key: Service, Value: !Ref ServiceKeyword }
+        - { Key: Use, Value: App }
+      VpcId: !Ref VpcId
+
+  ServerSecGrp:
+    Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: Delete
+    Properties:
+      GroupDescription: !Sub "${ServiceKeyword} server, for client access in ${VpcKeyword}"
+      SecurityGroupEgress:
+        - # Dummy, to avoid automatic all-egress rule
+          IpProtocol: "-1"  # All
+          CidrIp: "127.0.0.1/32"  # Loopback
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: !Ref PortMin
+          ToPort: !Ref PortMax
+          SourceSecurityGroupId: !Ref ClientSecGrp
+      Tags:
+        - { Key: Name, Value: !Sub "${VpcKeyword}-${ServiceKeyword}-Server-App-InVpc" }
+        - { Key: Scope, Value: Server }
+        - { Key: Service, Value: !Ref ServiceKeyword }
+        - { Key: Use, Value: App }
+      VpcId: !Ref VpcId
+
+  ClientSecGrpOutRule:  # Avoids circular dependency
+    Type: "AWS::EC2::SecurityGroupEgress"
+    Properties:
+      IpProtocol: tcp
+      FromPort: !Ref PortMin
+      ToPort: !Ref PortMax
+      DestinationSecurityGroupId: !Ref ServerSecGrp
+      GroupId: !Ref ClientSecGrp
+
+Outputs:
+  ClientSecGrpId:
+    Value: !Ref ClientSecGrp
+    Description: "Client security group ID"
+    Export:
+      Name: !Sub "SecGrp-${VpcKeyword}-${ServiceKeyword}-Client-App-InVpc-Id"
+  ServerSecGrpId:
+    Value: !Ref ServerSecGrp
+    Description: "Server security group ID"
+    Export:
+      Name: !Sub "SecGrp-${VpcKeyword}-${ServiceKeyword}-Server-App-InVpc-Id"

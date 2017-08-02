@@ -1,0 +1,48 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Sample database parameter group"
+# Sample only; for production, copy and modify. If your parameter groups
+# are similar, parameterize one template and call it from parent templates,
+# so that there will be a record of each use, with parameter values.
+
+# Paul Marcelin, 2017-08-01
+
+Parameters:
+  RdsFamily:
+    Type: String
+    Description: "RDS database engine family identifier"
+    Default: "oracle-se2-12.1"
+  RdsFamilyKeyword:
+    Type: String
+    Description: "RDS database engine family identifier, with hyphens instead of periods"
+    Default: "oracle-se2-12-1"
+  DbParmGrpKeyword:
+    Type: String
+    Description: "Keyword to identify the database parameter group (must be unique to the database family)"
+    Default: "Generic"
+
+Resources:
+
+  DbParmGrp:
+    Type: "AWS::RDS::DBParameterGroup"
+    DeletionPolicy: Delete
+    Properties: 
+      Description: !Sub "${RdsFamily} ${DbParmGrpKeyword}"
+      Family: !Ref RdsFamily
+      # Parameters:
+      # Override default parameter values here.
+      # Optionally, state default parameter values explicitly, for strict
+      # version control. In that case, running the following tool on an
+      # unmodified parameter group might be useful for generating the
+      # list of all parameter values. This is, however, untested.
+      # http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-using-cloudformer.html
+      Tags:
+        - { Key: Name, Value: !Sub "${RdsFamilyKeyword}-${DbParmGrpKeyword}" }
+
+Outputs:
+  DbParmGrpName:
+    Value: !Ref DbParmGrp
+    Description: "Database parameter group name"
+    Export:
+      Name: !Sub "DbParmGrp-${RdsFamilyKeyword}-${DbParmGrpKeyword}-Name"

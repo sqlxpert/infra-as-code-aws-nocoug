@@ -1,0 +1,48 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Sample database option group"
+# Sample only; for production, copy and modify. If your option groups are
+# similar, parameterize one template and call it from parent templates,
+# so that there will be a record of each use, with parameter values.
+
+# Paul Marcelin, 2017-08-01
+
+Parameters:
+  RdsEngine:
+    Type: String
+    Description: "RDS database engine identifier"
+    Default: "oracle-se2"
+  RdsMajorEngineVersion:
+    Type: String
+    Description: "Database major engine version"
+    Default: "12.1"
+  RdsMajorEngineVersionKeyword:
+    Type: String
+    Description: "Database major engine version, with hyphens instead of periods"
+    Default: "12-1"
+  RdsOptGrpKeyword:
+    Type: String
+    Description: "Keyword to identify the database option group (must be unique to the database engine and engine version)"
+    Default: "Generic"
+
+Resources:
+
+  RdsOptGrp:
+    Type: "AWS::RDS::OptionGroup"
+    DeletionPolicy: Delete
+    Properties:
+      EngineName: !Ref RdsEngine
+      MajorEngineVersion: !Ref RdsMajorEngineVersion
+      OptionGroupDescription: !Sub "${RdsEngine} ${RdsMajorEngineVersion} ${RdsOptGrpKeyword}"
+      # OptionConfigurations:
+      # Add options here.
+      Tags:
+        - { Key: Name, Value: !Sub "${RdsEngine}-${RdsMajorEngineVersionKeyword}-${RdsOptGrpKeyword}" }
+
+Outputs:
+  RdsOptGrpName:
+    Value: !Ref RdsOptGrp
+    Description: "Database option group name"
+    Export:
+      Name: !Sub "RdsOptGrp-${RdsEngine}-${RdsMajorEngineVersionKeyword}-${RdsOptGrpKeyword}-Name"

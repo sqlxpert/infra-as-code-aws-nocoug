@@ -1,0 +1,40 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Sample database subnet group"
+# Sample only; for production, define subnet groups in a comprehensive network
+# template.
+
+# Paul Marcelin, 2017-08-01
+
+Parameters:
+
+  # CloudFormation limitations preclude using the AWS-specific subnet
+  # parameter type (which allows selection from a menu of existing subnets)
+  # for an arbitrary number of subnets.
+  Subnet1Id:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: "Subnet 1 ID"
+  Subnet2Id:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: "Subnet 2 ID"
+
+Resources:
+
+  ExampleDBSubnetGrp:
+    Type: "AWS::RDS::DBSubnetGroup"
+    DeletionPolicy: Delete
+    Properties:
+      DBSubnetGroupDescription: "Example database subnet group"
+      SubnetIds:
+        - !Ref Subnet1Id
+        - !Ref Subnet2Id
+      Tags:
+        - { Key: Name, Value: Example }
+
+Outputs:
+  ExampleDBSubnetGrpId:
+    Value: !Ref ExampleDBSubnetGrp
+    Description: "Example database subnet group ID" 
+    Export:
+      Name: DBSubnetGrp-Sample-Id

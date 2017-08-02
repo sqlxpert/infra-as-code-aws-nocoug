@@ -1,0 +1,55 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Server client access security group, from outside VPC"
+# Sample only. Define production ex-VPC security groups in separate templates,
+# one per VPC per service per use case. Application access, replication, and
+# administration are examples of different use cases, which will certainly
+# involve different IP address ranges (CIDRs) and may also involve different
+# network protocols and port number ranges.
+
+# Paul Marcelin, 2017-08-01
+
+Parameters:
+  VpcId:
+    Type: "AWS::EC2::VPC::Id"
+    Description: "Parent Virtual Private Cloud (VPC) ID; if unsure, select the default VPC"
+  VpcKeyword:
+    Type: String
+    Description: "Keyword to identify the VPC (must be unique to the region)"
+    Default: "DefaultVPC"
+
+Resources:
+
+  ServerSecGrp:
+    Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: Delete
+    Properties:
+      GroupDescription: !Sub "OracleDB server, for client access outside ${VpcKeyword}"
+      SecurityGroupEgress:
+        - # Dummy, to avoid automatic all-egress rule
+          IpProtocol: "-1"  # All
+          CidrIp: "127.0.0.1/32"  # Loopback
+      SecurityGroupIngress:
+
+        - # Label rule here
+          IpProtocol: tcp
+          FromPort: 1521
+          ToPort: 1521
+          CidrIp: "127.0.0.1/32"  # Replace with desired public IP address
+
+        # Add rules for other protocols, port ranges and/or IP address ranges
+
+      Tags:
+        - { Key: Name, Value: !Sub "${VpcKeyword}-OracleDB-Server-App-ExVPC" }
+        - { Key: Scope, Value: Server }
+        - { Key: Service, Value: OracleDB }
+        - { Key: Use, Value: App }
+      VpcId: !Ref VpcId
+
+Outputs:
+  ServerSecGrpId:
+    Value: !Ref ServerSecGrp
+    Description: "Server security group ID"
+    Export:
+      Name: !Sub "SecGrp-${VpcKeyword}-OracleDB-Server-App-ExVpc-Id"
