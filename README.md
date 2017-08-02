@@ -34,14 +34,30 @@ August, 2017
 
    a. EC2 Instance
    
-      The EC2 instance must be in the same VPC as the RDS instance. You must install suitable Oracle client software on the instance, using the package manager for your operating system. Note the security group identifier exported by the _InVPC_ security group pair stack as `SecGrp-DefaultVPC-OracleDB-Client-App-InVpc-Id`. In the [EC2 Console](https://console.aws.amazon.com/ec2/), add the security group to your EC2 instance.
+      The EC2 instance must be in the same VPC as the RDS instance. Note the security group identifier exported by the _InVPC_ security group pair stack as `SecGrp-DefaultVPC-OracleDB-Client-App-InVpc-Id`. In the [EC2 Console](https://console.aws.amazon.com/ec2/), add the security group to your EC2 instance.
    
    b. Local system
    
       Confirm the current [public IP address](https://whatismyipaddress.com/) of your local system. Create a change set for the _ExVpc_ security group stack, replacing `127.0.0.1` in the _ingress_ rule with your public IP address.
 
-7. Note the database endpoint and port, which are exported by the database instance stack. Use those values, plus the master username `master` and the master password that you entered, to connect.
+7. Test network connectivity.
 
-8. Delete the database stack. Then, in the [RDS Console](https://console.aws.amazon.com/rds/), **delete the sample database instance without saving a final snapshot**.
+   Note the database endpoint and port, which are exported by the database instance stack as RdsInst-_StackName_-Endpoint and RdsInst-_StackName_-Port, where _StackName_ is the name you assigned to the database instance stack.
 
-9. Delete the remaining sample CloudFormation stacks.
+   On your EC2 instance or your local system, run `telnet `_`endpoint`_` `_`port`_, where _endpoint_ and _port_ are the values that you have noted.
+   
+   If the connection fails, Telnet will eventually exit. If the connection succeeds, Telnet will wait for activity. In that case, hold down the Control key and press the ']' key; this is the standard "escape" code. Then, type `quit`.
+
+8. Optionally, connect to the database from your EC2 instance or your local system.
+
+   Install suitable Oracle client software in the manner appropriate for your operating system. 
+
+   Connect using the endpoint, port, and master user name (`master`), and the master user password that you entered when you created the database instance stack.
+
+9. Delete the database stack. Then, in the [RDS Console](https://console.aws.amazon.com/rds/), **delete the sample database instance without saving a final snapshot**.
+
+10. Delete the remaining sample CloudFormation stacks.
+
+## Feedback
+
+I appreciate corrections, comments and suggestions. Pull requests are most welcome. Thank you!
