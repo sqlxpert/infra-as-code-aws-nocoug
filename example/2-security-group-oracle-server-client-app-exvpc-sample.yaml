@@ -36,7 +36,9 @@ Resources:
           IpProtocol: tcp
           FromPort: 1521
           ToPort: 1521
-          CidrIp: "127.0.0.1/32"  # Replace with desired public IP address
+          CidrIp: "127.0.0.1/32"
+          # Replace 127.0.0.1 (here only) with the desired single public IP address,
+          # or replace 127.0.0.1/32 (here only) with the desired CIDR (address range).
 
         # Add rules for other protocols, port ranges and/or IP address ranges
 
