@@ -36,7 +36,7 @@ August, 2017
 
    a. EC2 Instance
    
-      The EC2 instance must be in the same VPC as the RDS instance. You must install suitable Oracle client software on the instance, using the package manager for your operating system. Note the  In the [EC2 Console](https://console.aws.amazon.com/ec2/), modify the instance, adding the security group.
+      The EC2 instance must be in the same VPC as the RDS instance. You must install suitable Oracle client software on the instance, using the package manager for your operating system. Note the security group identifier exported by the security group pair stack as `SecGrp-DefaultVPC-OracleDB-Client-App-InVpc-Id`. In the [EC2 Console](https://console.aws.amazon.com/ec2/), modify the instance, adding the security group.
    
    b. Local system
    
