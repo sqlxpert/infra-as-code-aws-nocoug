@@ -4,6 +4,8 @@ AWS CloudFormation presentation and examples, for the Northern California Oracle
 
 Paul Marcelin
 
+![Bilby Stampede](/image/mail-paul.png)
+
 August, 2017
 
 ## Warnings
