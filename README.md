@@ -46,6 +46,8 @@ August, 2017
 
    Note the database endpoint and port, which are exported by the database instance stack as RdsInst-_StackName_-Endpoint and RdsInst-_StackName_-Port, where _StackName_ is the name you assigned to the database instance stack.
 
+   Telnet is included by default with Linux and MacOS. Follow these instructions to [enable Telnet in Windows](http://m.wikihow.com/Activate-Telnet-in-Windows-7) (the instructions mention Windows 7, but will work in any recent version of Windows).
+   
    On your EC2 instance or your local system, run `telnet `_`endpoint`_` `_`port`_, where _endpoint_ and _port_ are the values that you have noted.
    
    If the connection fails, Telnet will eventually exit. If the connection succeeds, Telnet will wait for activity. In that case, hold down the Control key and press the ']' key; this is the standard "escape" code. Then, type `quit`.
